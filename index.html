@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0f1923">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Badminton">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="https://ninghels-prog.github.io/Badminton-club/icon.png">
+<link rel="icon" type="image/png" href="https://ninghels-prog.github.io/Badminton-club/icon.png">
+<link rel="manifest" href="manifest.json">
+<title>Badminton Club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0f1923;--bg2:#162030;--bg3:#1e2d3d;
+  --blue:#1e90ff;--cyan:#00d4ff;--gold:#ffd166;--red:#ef476f;--green:#06d6a0;--purple:#a78bfa;
+  --text:#e8f4f8;--text-dim:#7a9ab5;--border:rgba(30,144,255,0.15);--radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+header{background:linear-gradient(160deg,#0a1628 0%,#162030 100%);padding:24px 20px 16px;border-bottom:1px solid var(--border);position:relative;overflow:hidden;}
+.header-bg{position:absolute;inset:0;background-image:radial-gradient(circle at 80% 20%,rgba(0,212,255,0.06) 0%,transparent 50%),radial-gradient(circle at 10% 80%,rgba(30,144,255,0.08) 0%,transparent 40%);pointer-events:none;}
+.header-inner{position:relative;display:flex;justify-content:space-between;align-items:flex-start;}
+.header-left h1{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;color:var(--text);line-height:1;margin-bottom:2px;}
+.header-left h1 span{color:var(--cyan);}
+.header-left p{color:var(--text-dim);font-size:12px;font-weight:300;}
+.carte-badge{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:10px 14px;text-align:right;cursor:pointer;transition:border-color 0.2s;}
+.carte-badge:hover{border-color:var(--cyan);}
+.carte-badge .label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);margin-bottom:3px;}
+.carte-badge .sessions-left{font-family:'Bebas Neue',sans-serif;font-size:28px;line-height:1;color:var(--gold);}
+.carte-badge .sessions-left.warning{color:var(--red);}
+.carte-badge .sessions-sub{font-size:10px;color:var(--text-dim);}
+.carte-progress{margin-top:12px;background:var(--bg3);border-radius:4px;height:5px;overflow:hidden;}
+.carte-progress-fill{height:100%;border-radius:4px;background:linear-gradient(to right,var(--cyan),var(--gold));transition:width 0.5s ease;}
+.carte-progress-fill.warning{background:linear-gradient(to right,var(--gold),var(--red));}
+
+/* SYNC STATUS */
+.sync-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--border);font-size:11px;}
+.sync-status{display:flex;align-items:center;gap:6px;color:var(--text-dim);}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text-dim);flex-shrink:0;}
+.sync-dot.ok{background:var(--green);}
+.sync-dot.error{background:var(--red);}
+.sync-dot.syncing{background:var(--gold);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.btn-sync{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text-dim);font-size:11px;padding:4px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;}
+.btn-sync:hover{border-color:var(--cyan);color:var(--cyan);}
+
+/* LOGIN SCREEN */
+.login-screen{display:none;position:fixed;inset:0;background:var(--bg);z-index:500;flex-direction:column;align-items:center;justify-content:center;padding:32px;}
+.login-screen.visible{display:flex;}
+.login-logo{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:3px;color:var(--text);margin-bottom:4px;}
+.login-logo span{color:var(--cyan);}
+.login-sub{color:var(--text-dim);font-size:13px;margin-bottom:40px;}
+.btn-google{display:flex;align-items:center;gap:12px;background:white;color:#1a1a1a;border:none;border-radius:12px;padding:14px 24px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 20px rgba(0,0,0,0.3);}
+.btn-google:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,0.4);}
+.btn-google img{width:22px;height:22px;}
+.login-note{margin-top:20px;font-size:11px;color:var(--text-dim);text-align:center;max-width:280px;line-height:1.6;}
+
+.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;overflow-x:auto;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{flex:1;min-width:0;padding:12px 4px;text-align:center;font-size:11px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;color:var(--text-dim);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;white-space:nowrap;}
+.tab.active{color:var(--cyan);border-bottom-color:var(--cyan);}
+main{padding:16px;max-width:480px;margin:0 auto;}
+.page{display:none;}
+.page.active{display:block;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px;}
+.card-title{font-size:10px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--cyan);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.card-title::after{content:'';flex:1;height:1px;background:var(--border);}
+input[type="date"],input[type="number"]{width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;padding:13px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;font-weight:500;outline:none;transition:border-color 0.2s;color-scheme:dark;-webkit-appearance:none;}
+input[type="date"]:focus,input[type="number"]:focus{border-color:var(--cyan);}
+input[type="number"]{-moz-appearance:textfield;}
+input[type="number"]::-webkit-outer-spin-button,input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;}
+.players-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.player-tile{background:var(--bg3);border:2px solid var(--border);border-radius:12px;padding:14px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all 0.18s;user-select:none;}
+.player-tile:active{transform:scale(0.96);}
+.player-tile.present{background:rgba(6,214,160,0.1);border-color:var(--green);}
+.player-avatar{width:36px;height:36px;border-radius:50%;background:var(--bg);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:var(--text-dim);flex-shrink:0;transition:all 0.18s;}
+.player-tile.present .player-avatar{background:var(--green);border-color:var(--green);color:#0f1923;}
+.player-name{font-size:14px;font-weight:500;color:var(--text-dim);transition:color 0.18s;}
+.player-tile.present .player-name{color:var(--text);font-weight:600;}
+.check-icon{margin-left:auto;color:var(--green);font-size:16px;opacity:0;transition:opacity 0.18s;}
+.player-tile.present .check-icon{opacity:1;}
+.select-row{display:flex;gap:8px;margin-top:12px;}
+.btn-sm{flex:1;padding:9px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text-dim);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all 0.15s;}
+.btn-sm:hover{border-color:var(--cyan);color:var(--cyan);}
+.cost-preview{background:linear-gradient(135deg,var(--bg3),#1a2a3a);border:1px solid rgba(0,212,255,0.2);border-radius:12px;padding:16px;display:flex;justify-content:space-between;align-items:center;}
+.cost-item{text-align:center;}
+.cost-value{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--gold);line-height:1;}
+.cost-label{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.8px;margin-top:2px;}
+.cost-divider{color:var(--text-dim);font-size:20px;font-weight:300;}
+.btn-main{width:100%;padding:16px;border:none;border-radius:var(--radius);background:linear-gradient(135deg,var(--blue) 0%,var(--cyan) 100%);color:var(--bg);font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;cursor:pointer;transition:all 0.2s;margin-bottom:12px;box-shadow:0 4px 20px rgba(0,212,255,0.25);}
+.btn-main:hover{box-shadow:0 6px 28px rgba(0,212,255,0.4);transform:translateY(-1px);}
+.btn-main:active{transform:scale(0.98);}
+.btn-main:disabled{background:var(--bg3);color:var(--text-dim);box-shadow:none;cursor:not-allowed;transform:none;}
+.btn-danger{width:100%;padding:15px;border:1.5px solid var(--red);border-radius:var(--radius);background:rgba(239,71,111,0.08);color:var(--red);font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1.5px;cursor:pointer;transition:all 0.2s;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:10px;}
+.btn-danger:hover{background:rgba(239,71,111,0.16);}
+.btn-export{width:100%;padding:14px;border:1.5px solid var(--gold);border-radius:var(--radius);background:rgba(255,209,102,0.08);color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1.5px;cursor:pointer;transition:all 0.2s;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:10px;}
+.btn-export:hover{background:rgba(255,209,102,0.15);}
+.btn-export.blue{border-color:var(--blue);color:var(--blue);background:rgba(30,144,255,0.08);}
+.btn-export.blue:hover{background:rgba(30,144,255,0.15);}
+.session-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;position:relative;overflow:hidden;}
+.session-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(to bottom,var(--cyan),var(--blue));border-radius:3px 0 0 3px;}
+.session-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.session-date{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--text);letter-spacing:1px;}
+.session-players{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.session-player-chip{background:rgba(30,144,255,0.12);border:1px solid rgba(30,144,255,0.25);color:var(--text-dim);font-size:11px;font-weight:500;padding:3px 9px;border-radius:50px;}
+.session-delete{position:absolute;top:12px;right:12px;background:none;border:none;color:var(--text-dim);font-size:14px;cursor:pointer;padding:4px 6px;border-radius:6px;opacity:0.4;transition:all 0.15s;}
+.session-delete:hover{opacity:1;color:var(--red);background:rgba(239,71,111,0.1);}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.stat-tile{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;}
+.stat-value{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--cyan);line-height:1;margin-bottom:4px;}
+.stat-label{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.8px;}
+.balance-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+.balance-row:last-child{border-bottom:none;}
+.balance-rank{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--text-dim);width:24px;flex-shrink:0;}
+.balance-info{flex:1;padding:0 10px;}
+.balance-name{font-size:14px;font-weight:500;}
+.balance-meta{font-size:11px;color:var(--text-dim);margin-top:2px;}
+.balance-amount{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);}
+.carte-archive-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;}
+.carte-archive-header{padding:16px 18px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:background 0.15s;}
+.carte-archive-header:hover{background:rgba(0,212,255,0.04);}
+.carte-archive-num{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;}
+.carte-archive-num.active-carte{color:var(--green);}
+.carte-archive-num.closed-carte{color:var(--cyan);}
+.carte-archive-dates{font-size:11px;color:var(--text-dim);margin-top:2px;}
+.carte-archive-right{text-align:right;}
+.carte-archive-sessions{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold);}
+.carte-archive-cost{font-size:11px;color:var(--text-dim);}
+.carte-archive-chevron{color:var(--text-dim);font-size:14px;margin-left:10px;transition:transform 0.2s;display:inline-block;}
+.carte-archive-chevron.open{transform:rotate(180deg);}
+.carte-archive-body{display:none;border-top:1px solid var(--border);}
+.carte-archive-body.open{display:block;}
+.carte-detail-section{padding:14px 18px;}
+.carte-detail-title{font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--purple);margin-bottom:10px;}
+.carte-session-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(30,144,255,0.08);}
+.carte-session-row:last-child{border-bottom:none;}
+.carte-session-date{color:var(--text-dim);font-size:13px;}
+.carte-session-info{font-size:11px;color:var(--text-dim);margin-top:1px;}
+.carte-session-amount{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--gold);}
+.carte-player-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(30,144,255,0.08);}
+.carte-player-row:last-child{border-bottom:none;}
+.carte-player-name{font-size:14px;font-weight:500;}
+.carte-player-meta{font-size:11px;color:var(--text-dim);}
+.carte-player-amount{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--gold);}
+.badge-active{display:inline-block;background:rgba(6,214,160,0.15);border:1px solid var(--green);color:var(--green);font-size:10px;font-weight:600;padding:2px 8px;border-radius:50px;letter-spacing:0.8px;margin-left:8px;vertical-align:middle;}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-dim);}
+.empty-state .icon{font-size:48px;margin-bottom:12px;}
+.empty-state p{font-size:14px;line-height:1.5;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:24px 20px 32px;width:100%;max-width:480px;}
+.modal h3{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;margin-bottom:6px;color:var(--cyan);}
+.modal p{font-size:13px;color:var(--text-dim);margin-bottom:18px;}
+.modal-close{float:right;background:none;border:none;color:var(--text-dim);font-size:20px;cursor:pointer;margin-top:-4px;}
+.modal-fields{display:flex;flex-direction:column;gap:12px;margin-bottom:18px;}
+.field-label{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px;}
+.cfg-preview-box{background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px;color:var(--text-dim);}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg3);border:1px solid var(--cyan);color:var(--text);padding:12px 22px;border-radius:50px;font-size:13px;font-weight:500;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);z-index:200;white-space:nowrap;box-shadow:0 4px 24px rgba(0,212,255,0.2);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-logo">BADMINTON <span>CLUB</span></div>
+  <div class="login-sub">Connecte-toi pour synchroniser tes données</div>
+  <button class="btn-google" onclick="signIn()">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+    Se connecter avec Google
+  </button>
+  <div class="login-note">Tes données seront sauvegardées dans Google Sheets et accessibles sur tous tes appareils.</div>
+</div>
+
+<header>
+  <div class="header-bg"></div>
+  <div class="header-inner">
+    <div class="header-left">
+      <h1>BADMINTON <span>CLUB</span></h1>
+      <p>Suivi des sessions &amp; répartition des coûts</p>
+    </div>
+    <div class="carte-badge" onclick="openModal()" title="Configurer la carte">
+      <div class="label">Sessions restantes</div>
+      <div class="sessions-left" id="sessionsLeft">–</div>
+      <div class="sessions-sub" id="sessionsSub">sur – sessions</div>
+    </div>
+  </div>
+  <div class="carte-progress">
+    <div class="carte-progress-fill" id="carteProgressFill" style="width:0%"></div>
+  </div>
+</header>
+
+<div class="sync-bar">
+  <div class="sync-status">
+    <div class="sync-dot" id="syncDot"></div>
+    <span id="syncLabel">Non connecté</span>
+  </div>
+  <button class="btn-sync" onclick="syncAll()">↻ Synchroniser</button>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('encode')" id="tab-encode">🏸 Session</div>
+  <div class="tab" onclick="showTab('history')" id="tab-history">📋 Historique</div>
+  <div class="tab" onclick="showTab('balance')" id="tab-balance">💶 Soldes</div>
+  <div class="tab" onclick="showTab('cartes')" id="tab-cartes">🃏 Cartes</div>
+</div>
+
+<main>
+  <!-- SESSION -->
+  <div class="page active" id="page-encode">
+    <div class="card">
+      <div class="card-title">Date de la session</div>
+      <input type="date" id="sessionDate">
+    </div>
+    <div class="card">
+      <div class="card-title">Joueurs présents <span id="presentCount" style="color:var(--gold);font-size:13px;margin-left:auto;font-style:italic;letter-spacing:0">0 sélectionné(s)</span></div>
+      <div class="players-grid" id="playersGrid"></div>
+      <div class="select-row">
+        <button class="btn-sm" onclick="selectAllPlayers()">✓ Tous</button>
+        <button class="btn-sm" onclick="selectNoPlayers()">✗ Aucun</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Coût de la session</div>
+      <div class="cost-preview">
+        <div class="cost-item"><div class="cost-value" id="previewTotal">–</div><div class="cost-label">Coût session</div></div>
+        <div class="cost-divider">÷</div>
+        <div class="cost-item"><div class="cost-value" id="previewCount" style="color:var(--cyan)">–</div><div class="cost-label">Présents</div></div>
+        <div class="cost-divider">=</div>
+        <div class="cost-item"><div class="cost-value" id="previewPer" style="color:var(--green)">– €</div><div class="cost-label">Par personne</div></div>
+      </div>
+    </div>
+    <button class="btn-main" id="saveBtn" onclick="saveSession()">ENREGISTRER LA SESSION</button>
+  </div>
+
+  <!-- HISTORIQUE -->
+  <div class="page" id="page-history">
+    <div id="historyList"></div>
+    <div id="historyEmpty" class="empty-state" style="display:none">
+      <div class="icon">🏸</div>
+      <p>Aucune session enregistrée.<br>Encodez votre première session !</p>
+    </div>
+  </div>
+
+  <!-- SOLDES -->
+  <div class="page" id="page-balance">
+    <div class="stats-grid" id="statsGrid"></div>
+    <div class="card" id="balanceCard">
+      <div class="card-title">Classement — du plus au moins</div>
+      <div id="balanceList"></div>
+    </div>
+    <button class="btn-export" onclick="exportCSV()">📊 EXPORTER CSV GOOGLE SHEETS</button>
+    <button class="btn-export blue" onclick="copyBalance()">📋 COPIER LE RÉSUMÉ</button>
+    <button class="btn-danger" onclick="cloturerCarte()">🔒 CLÔTURER LA CARTE EN COURS</button>
+    <div id="balanceEmpty" class="empty-state" style="display:none">
+      <div class="icon">📊</div>
+      <p>Aucune donnée.<br>Enregistrez des sessions d'abord.</p>
+    </div>
+  </div>
+
+  <!-- CARTES -->
+  <div class="page" id="page-cartes">
+    <div id="cartesList"></div>
+    <div id="cartesEmpty" class="empty-state" style="display:none">
+      <div class="icon">🃏</div>
+      <p>Aucune carte archivée.<br>Clôturez une carte depuis l'onglet Soldes.</p>
+    </div>
+  </div>
+</main>
+
+<!-- MODAL CONFIG -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h3>⚙️ Configuration carte</h3>
+    <p>Paramètres de la carte de badminton</p>
+    <div class="modal-fields">
+      <div><div class="field-label">Prix de la carte (€)</div><input type="number" id="cfgPrice" value="114" step="0.01" min="1"></div>
+      <div><div class="field-label">Nombre de demi-heures sur la carte</div><input type="number" id="cfgSlots" value="12" min="1" step="1"></div>
+      <div><div class="field-label">Durée d'une session (demi-heures)</div><input type="number" id="cfgSession" value="2" min="1" step="1"></div>
+    </div>
+    <div class="cfg-preview-box">
+      Coût par session : <strong style="color:var(--gold)" id="cfgPreview">19,00 €</strong>
+      &nbsp;(= <span id="cfgFormula">114 ÷ 6</span>)
+    </div>
+    <button class="btn-main" onclick="saveConfig()" style="margin-bottom:0">ENREGISTRER</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<script>
+// ===== CONFIG =====
+const CLIENT_ID   = '92156540506-fsfecv1pqmn629fr4ndecg0a4beqq3s0.apps.googleusercontent.com';
+const SHEET_ID    = '1X0-7iHpRsPLP08rcSi-wkmguBZPekAiL3DuXRJvkvJ0';
+const SCOPES      = 'https://www.googleapis.com/auth/spreadsheets';
+const PLAYERS     = ['Nico','Matthieu','Pierrot','Vincent','Lionel','Thomas','Stéphan'];
+
+let sessions      = JSON.parse(localStorage.getItem('badminton_sessions')  || '[]');
+let cartesArchive = JSON.parse(localStorage.getItem('badminton_cartes')    || '[]');
+let config        = JSON.parse(localStorage.getItem('badminton_config')    || 'null') || {price:114,slots:12,sessionSlots:2};
+let selectedPlayers = new Set(['Nico']);
+let accessToken   = null;
+let tokenClient   = null;
+
+// ===== INIT =====
+function init() {
+  const t = new Date();
+  document.getElementById('sessionDate').value =
+    `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+  renderPlayers(); updateCostPreview(); updateCarteStatus();
+
+  // Init Google Identity
+  google.accounts.id.initialize({ client_id: CLIENT_ID, callback: () => {} });
+
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: async (resp) => {
+      if (resp.error) { setSyncStatus('error','Erreur de connexion'); return; }
+      accessToken = resp.access_token;
+      localStorage.setItem('badminton_token', accessToken);
+      setSyncStatus('syncing','Synchronisation...');
+      document.getElementById('loginScreen').classList.remove('visible');
+      await loadFromSheets();
+      setSyncStatus('ok','Synchronisé');
+      showToast('✅ Connecté et synchronisé !');
+    }
+  });
+
+  // Try restore token
+  const saved = localStorage.getItem('badminton_token');
+  if (saved) {
+    accessToken = saved;
+    setSyncStatus('ok','Connecté');
+  } else {
+    document.getElementById('loginScreen').classList.add('visible');
+    setSyncStatus('error','Non connecté');
+  }
+}
+
+function signIn() {
+  tokenClient.requestAccessToken({ prompt: 'consent' });
+}
+
+// ===== SYNC STATUS =====
+function setSyncStatus(state, label) {
+  const dot = document.getElementById('syncDot');
+  dot.className = 'sync-dot ' + state;
+  document.getElementById('syncLabel').textContent = label;
+}
+
+async function syncAll() {
+  if (!accessToken) { document.getElementById('loginScreen').classList.add('visible'); return; }
+  setSyncStatus('syncing','Synchronisation...');
+  try {
+    await saveToSheets();
+    await loadFromSheets();
+    setSyncStatus('ok','Synchronisé · ' + new Date().toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit'}));
+    showToast('✅ Données synchronisées !');
+  } catch(e) {
+    setSyncStatus('error','Erreur sync');
+    showToast('❌ Erreur de synchronisation');
+    console.error(e);
+  }
+}
+
+// ===== SHEETS API =====
+async function sheetsRequest(method, range, body) {
+  const base = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}`;
+  let url, options;
+  if (method === 'GET') {
+    url = `${base}/values/${encodeURIComponent(range)}`;
+    options = { headers: { Authorization: `Bearer ${accessToken}` } };
+  } else {
+    url = `${base}/values/${encodeURIComponent(range)}?valueInputOption=RAW`;
+    options = {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ range, majorDimension: 'ROWS', values: body })
+    };
+  }
+  const r = await fetch(url, options);
+  if (r.status === 401) { accessToken = null; localStorage.removeItem('badminton_token'); document.getElementById('loginScreen').classList.add('visible'); throw new Error('Token expired'); }
+  return r.json();
+}
+
+async function clearSheet(sheet) {
+  const base = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}`;
+  await fetch(`${base}/values/${encodeURIComponent(sheet)}:clear`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' }
+  });
+}
+
+// ===== SAVE TO SHEETS =====
+async function saveToSheets() {
+  // Sessions sheet
+  await clearSheet('Sessions');
+  const sessionRows = [['id','date','players','cost','perPerson']];
+  sessions.forEach(s => sessionRows.push([s.id, s.date, JSON.stringify(s.players), s.cost, s.perPerson]));
+  await sheetsRequest('PUT', 'Sessions!A1', sessionRows);
+
+  // Cartes sheet
+  await clearSheet('Cartes');
+  const carteRows = [['id','num','dateMin','dateMax','sessions','config','stats']];
+  cartesArchive.forEach(c => carteRows.push([c.id, c.num, c.dateMin, c.dateMax, JSON.stringify(c.sessions), JSON.stringify(c.config), JSON.stringify(c.stats)]));
+  await sheetsRequest('PUT', 'Cartes!A1', carteRows);
+
+  // Config sheet
+  await clearSheet('Config');
+  await sheetsRequest('PUT', 'Config!A1', [
+    ['key','value'],
+    ['price', config.price],
+    ['slots', config.slots],
+    ['sessionSlots', config.sessionSlots]
+  ]);
+}
+
+// ===== LOAD FROM SHEETS =====
+async function loadFromSheets() {
+  try {
+    // Load sessions
+    const sData = await sheetsRequest('GET', 'Sessions!A2:E1000');
+    if (sData.values && sData.values.length > 0) {
+      sessions = sData.values.map(r => ({
+        id: parseInt(r[0]), date: r[1],
+        players: JSON.parse(r[2] || '[]'),
+        cost: parseNum(r[3]), perPerson: parseNum(r[4])
+      }));
+      localStorage.setItem('badminton_sessions', JSON.stringify(sessions));
+    }
+
+    // Load cartes
+    const cData = await sheetsRequest('GET', 'Cartes!A2:G1000');
+    if (cData.values && cData.values.length > 0) {
+      cartesArchive = cData.values.map(r => ({
+        id: parseInt(r[0]), num: parseInt(r[1]),
+        dateMin: r[2], dateMax: r[3],
+        sessions: JSON.parse(r[4] || '[]'),
+        config: JSON.parse(r[5] || '{}'),
+        stats: JSON.parse(r[6] || '{}')
+      }));
+      localStorage.setItem('badminton_cartes', JSON.stringify(cartesArchive));
+    }
+
+    // Load config
+    const cfgData = await sheetsRequest('GET', 'Config!A2:B10');
+    if (cfgData.values && cfgData.values.length > 0) {
+      cfgData.values.forEach(r => {
+        if (r[0] === 'price')        config.price        = parseNum(r[1]);
+        if (r[0] === 'slots')        config.slots        = parseInt(r[1]);
+        if (r[0] === 'sessionSlots') config.sessionSlots = parseInt(r[1]);
+      });
+      localStorage.setItem('badminton_config', JSON.stringify(config));
+    }
+
+    updateCarteStatus(); updateCostPreview();
+    // Refresh current tab
+    const activeTab = document.querySelector('.tab.active')?.id?.replace('tab-','');
+    if (activeTab === 'history') renderHistory();
+    if (activeTab === 'balance') renderBalance();
+    if (activeTab === 'cartes')  renderCartes();
+  } catch(e) { console.error('Load error:', e); }
+}
+
+// ===== TABS =====
+function showTab(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='history') renderHistory();
+  if(name==='balance') renderBalance();
+  if(name==='cartes')  renderCartes();
+}
+
+// ===== PLAYERS =====
+function renderPlayers() {
+  document.getElementById('playersGrid').innerHTML = PLAYERS.map(p=>`
+    <div class="player-tile ${selectedPlayers.has(p)?'present':''}" onclick="togglePlayer('${p}')">
+      <div class="player-avatar">${p.charAt(0)}</div>
+      <div class="player-name">${p}</div>
+      <div class="check-icon">✓</div>
+    </div>`).join('');
+  document.getElementById('presentCount').textContent = `${selectedPlayers.size} sélectionné(s)`;
+  updateCostPreview();
+}
+function togglePlayer(n){selectedPlayers.has(n)?selectedPlayers.delete(n):selectedPlayers.add(n);renderPlayers();}
+function selectAllPlayers(){selectedPlayers=new Set(PLAYERS);renderPlayers();}
+function selectNoPlayers(){selectedPlayers.clear();renderPlayers();}
+function resetSelection(){selectedPlayers=new Set(['Nico']);renderPlayers();}
+
+// ===== COST =====
+function sessionCost(){return config.price/(config.slots/config.sessionSlots);}
+function sessionsPerCarte(){return Math.round(config.slots/config.sessionSlots);}
+function updateCostPreview(){
+  const cost=sessionCost(),n=selectedPlayers.size,per=n>0?cost/n:0;
+  document.getElementById('previewTotal').textContent=fmt(cost)+' €';
+  document.getElementById('previewCount').textContent=n>0?n:'–';
+  document.getElementById('previewPer').textContent=n>0?fmt(per)+' €':'– €';
+  document.getElementById('saveBtn').disabled=n===0;
+}
+
+// ===== CARTE STATUS =====
+function updateCarteStatus(){
+  const total=sessionsPerCarte();
+  const used=sessions.length%total;
+  const remaining=used===0&&sessions.length>0?0:total-used;
+  const pct=(used/total)*100;
+  const el=document.getElementById('sessionsLeft');
+  el.textContent=remaining===0&&sessions.length>0?'PLEINE':remaining;
+  el.className='sessions-left'+(remaining<=2?' warning':'');
+  document.getElementById('sessionsSub').textContent=`sur ${total} sessions`;
+  const fill=document.getElementById('carteProgressFill');
+  fill.style.width=pct+'%';
+  fill.className='carte-progress-fill'+(remaining<=2?' warning':'');
+}
+
+// ===== SAVE SESSION =====
+async function saveSession(){
+  const date=document.getElementById('sessionDate').value;
+  if(!date){showToast('❌ Choisissez une date');return;}
+  if(selectedPlayers.size===0){showToast('❌ Sélectionnez des joueurs');return;}
+  const cost=sessionCost(),players=[...selectedPlayers];
+  const session={id:Date.now(),date,players,cost:parseFloat(cost.toFixed(4)),perPerson:parseFloat((cost/players.length).toFixed(4))};
+  sessions.push(session);
+  sessions.sort((a,b)=>b.date.localeCompare(a.date));
+  localStorage.setItem('badminton_sessions',JSON.stringify(sessions));
+  updateCarteStatus();
+  showToast('✅ Session enregistrée — synchronisation...');
+  resetSelection();
+  if(accessToken){ try{ await saveToSheets(); setSyncStatus('ok','Synchronisé'); }catch(e){ setSyncStatus('error','Sync en attente'); } }
+}
+
+// ===== HISTORY =====
+function renderHistory(){
+  const list=document.getElementById('historyList'),empty=document.getElementById('historyEmpty');
+  if(sessions.length===0){list.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  list.innerHTML=sessions.map(s=>`
+    <div class="session-item">
+      <button class="session-delete" onclick="deleteSession(${s.id})">🗑</button>
+      <div class="session-header">
+        <div class="session-date">${formatDate(s.date)}</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:2px">${s.players.length} joueurs · ${s.players.length*config.sessionSlots} demi-h</div>
+      </div>
+      <div class="session-players" style="margin-bottom:10px">${s.players.map(p=>`<div class="session-player-chip">${p}</div>`).join('')}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid rgba(30,144,255,0.1)">
+        <div style="font-size:11px;color:var(--text-dim)">Part par personne</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold)">${fmt(s.perPerson)} €</div>
+      </div>
+    </div>`).join('');
+}
+
+async function deleteSession(id){
+  if(!confirm('Supprimer cette session ?'))return;
+  sessions=sessions.filter(s=>s.id!==id);
+  localStorage.setItem('badminton_sessions',JSON.stringify(sessions));
+  updateCarteStatus(); renderHistory();
+  if(accessToken){ try{ await saveToSheets(); setSyncStatus('ok','Synchronisé'); }catch(e){ setSyncStatus('error','Sync en attente'); } }
+  showToast('🗑 Session supprimée');
+}
+
+// ===== STATS =====
+function computeStats(sessionList){
+  const p={};
+  PLAYERS.forEach(n=>p[n]={sessions:0,demiH:0,total:0});
+  sessionList.forEach(s=>s.players.forEach(n=>{
+    if(p[n]){p[n].sessions++;p[n].demiH+=config.sessionSlots;p[n].total+=s.perPerson;}
+  }));
+  return p;
+}
+
+// ===== BALANCE =====
+function renderBalance(){
+  const sGrid=document.getElementById('statsGrid'),bList=document.getElementById('balanceList'),
+        bEmpty=document.getElementById('balanceEmpty'),bCard=document.getElementById('balanceCard');
+  if(sessions.length===0){sGrid.innerHTML='';bCard.style.display='none';bEmpty.style.display='block';return;}
+  bEmpty.style.display='none';bCard.style.display='block';
+  const totalCost=sessions.reduce((a,s)=>a+s.cost,0);
+  const totalDemiH=sessions.length*config.sessionSlots;
+  const stats=computeStats(sessions);
+  sGrid.innerHTML=`
+    <div class="stat-tile"><div class="stat-value">${sessions.length}</div><div class="stat-label">Sessions</div></div>
+    <div class="stat-tile"><div class="stat-value">${totalDemiH}</div><div class="stat-label">Demi-heures</div></div>
+    <div class="stat-tile"><div class="stat-value">${fmt(totalCost)} €</div><div class="stat-label">Coût total</div></div>
+    <div class="stat-tile"><div class="stat-value">${fmt(sessionCost())} €</div><div class="stat-label">Coût/session</div></div>`;
+  const sorted=PLAYERS.filter(p=>stats[p].sessions>0).sort((a,b)=>stats[b].total-stats[a].total);
+  bList.innerHTML=sorted.map((p,i)=>`
+    <div class="balance-row">
+      <div class="balance-rank">${i+1}</div>
+      <div class="balance-info"><div class="balance-name">${p}</div><div class="balance-meta">${stats[p].sessions} session(s) · ${stats[p].demiH} demi-h</div></div>
+      <div class="balance-amount">${fmt(stats[p].total)} €</div>
+    </div>`).join('');
+}
+
+// ===== CLÔTURE =====
+async function cloturerCarte(){
+  if(sessions.length===0){showToast('❌ Aucune session à clôturer');return;}
+  const dates=sessions.map(s=>s.date).sort();
+  const dMin=formatDate(dates[0]),dMax=formatDate(dates[dates.length-1]);
+  const num=cartesArchive.length+1;
+  const totalCost=sessions.reduce((a,s)=>a+s.cost,0);
+  const msg=`Clôturer la Carte #${num} ?\n\n📅 Période : ${dMin} → ${dMax}\n🏸 ${sessions.length} session(s) · ${sessions.length*config.sessionSlots} demi-heures\n💶 Coût total : ${fmt(totalCost)} €\n\nLes sessions seront archivées et le compteur remis à zéro.`;
+  if(!confirm(msg))return;
+  cartesArchive.push({id:Date.now(),num,dateMin:dates[0],dateMax:dates[dates.length-1],sessions:[...sessions],config:{...config},stats:computeStats(sessions)});
+  localStorage.setItem('badminton_cartes',JSON.stringify(cartesArchive));
+  sessions=[];
+  localStorage.setItem('badminton_sessions',JSON.stringify(sessions));
+  updateCarteStatus();
+  if(accessToken){ try{ await saveToSheets(); setSyncStatus('ok','Synchronisé'); }catch(e){ setSyncStatus('error','Sync en attente'); } }
+  showToast(`🃏 Carte #${num} clôturée !`);
+  showTab('cartes');
+}
+
+// ===== CARTES =====
+function renderCartes(){
+  const list=document.getElementById('cartesList'),empty=document.getElementById('cartesEmpty');
+  const hasCurrent=sessions.length>0;
+  if(cartesArchive.length===0&&!hasCurrent){list.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  let html='';
+  if(hasCurrent){
+    const dates=sessions.map(s=>s.date).sort();
+    html+=renderCarteBlock({id:'current',num:cartesArchive.length+1,dateMin:dates[0],dateMax:dates[dates.length-1],sessions,config,stats:computeStats(sessions)},true);
+  }
+  [...cartesArchive].reverse().forEach(c=>html+=renderCarteBlock(c,false));
+  list.innerHTML=html;
+}
+
+function renderCarteBlock(carte,isActive){
+  const dates=carte.sessions.map(s=>s.date).sort();
+  const dMin=formatDate(dates[0]||''),dMax=formatDate(dates[dates.length-1]||'');
+  const total=carte.sessions.reduce((a,s)=>a+s.cost,0);
+  const demiH=carte.sessions.length*(carte.config?.sessionSlots||2);
+  const stats=carte.stats||computeStats(carte.sessions);
+  const sorted=PLAYERS.filter(p=>stats[p]&&stats[p].sessions>0).sort((a,b)=>stats[b].total-stats[a].total);
+  const bid='carte_'+carte.id;
+  return `
+  <div class="carte-archive-item">
+    <div class="carte-archive-header" onclick="toggleCarte('${bid}')">
+      <div>
+        <div class="carte-archive-num ${isActive?'active-carte':'closed-carte'}">CARTE #${carte.num}${isActive?'<span class="badge-active">EN COURS</span>':''}</div>
+        <div class="carte-archive-dates">${dMin} → ${dMax}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="carte-archive-right">
+          <div class="carte-archive-sessions">${carte.sessions.length} sessions</div>
+          <div class="carte-archive-cost">${demiH} demi-h · ${fmt(total)} €</div>
+        </div>
+        <div class="carte-archive-chevron" id="chev_${bid}">▼</div>
+      </div>
+    </div>
+    <div class="carte-archive-body" id="${bid}">
+      <div class="carte-detail-section">
+        <div class="carte-detail-title">Sessions</div>
+        ${carte.sessions.map(s=>`
+          <div class="carte-session-row">
+            <div><div class="carte-session-date">${formatDate(s.date)}</div><div class="carte-session-info">${s.players.length} joueurs · ${s.players.join(', ')}</div></div>
+            <div class="carte-session-amount">${fmt(s.perPerson)} €/pers</div>
+          </div>`).join('')}
+      </div>
+      <div class="carte-detail-section" style="border-top:1px solid var(--border)">
+        <div class="carte-detail-title">Soldes joueurs — du plus au moins</div>
+        ${sorted.map((p,i)=>`
+          <div class="carte-player-row">
+            <div><div class="carte-player-name">${i+1}. ${p}</div><div class="carte-player-meta">${stats[p].sessions} session(s) · ${stats[p].demiH} demi-h</div></div>
+            <div class="carte-player-amount">${fmt(stats[p].total)} €</div>
+          </div>`).join('')}
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between">
+          <div style="font-size:12px;color:var(--text-dim)">Total · ${demiH} demi-h</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--cyan)">${fmt(total)} €</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleCarte(id){
+  document.getElementById(id).classList.toggle('open');
+  document.getElementById('chev_'+id).classList.toggle('open');
+}
+
+// ===== EXPORT =====
+function exportCSV(){
+  if(sessions.length===0){showToast('❌ Aucune session à exporter');return;}
+  const stats=computeStats(sessions);
+  const totalCost=sessions.reduce((a,s)=>a+s.cost,0);
+  const rows=[
+    ['EXPORT BADMINTON CLUB'],['Généré le',new Date().toLocaleDateString('fr-BE')],
+    ['Nb sessions',sessions.length],['Demi-heures',sessions.length*config.sessionSlots],['Coût total (€)',fmt(totalCost)],
+    [''],['DÉTAIL DES SESSIONS'],['Date','Joueurs','Nb présents','Demi-heures','Coût session (€)','Part/personne (€)'],
+    ...sessions.map(s=>[formatDate(s.date),s.players.join(' / '),s.players.length,s.players.length*config.sessionSlots,s.cost.toFixed(2),s.perPerson.toFixed(2)]),
+    [''],['SOLDES PAR JOUEUR (du + au -)'],['#','Joueur','Sessions','Demi-heures','Total dû (€)'],
+    ...PLAYERS.filter(p=>stats[p].sessions>0).sort((a,b)=>stats[b].total-stats[a].total).map((p,i)=>[i+1,p,stats[p].sessions,stats[p].demiH,stats[p].total.toFixed(2)])
+  ];
+  const csv='\uFEFF'+rows.map(r=>r.join(';')).join('\n');
+  const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  const a=document.createElement('a');a.href=url;a.download=`badminton_${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(url);
+  showToast('📊 CSV exporté !');
+}
+
+function copyBalance(){
+  if(sessions.length===0){showToast('❌ Aucune donnée');return;}
+  const stats=computeStats(sessions);
+  const totalCost=sessions.reduce((a,s)=>a+s.cost,0);
+  const sorted=PLAYERS.filter(p=>stats[p].sessions>0).sort((a,b)=>stats[b].total-stats[a].total);
+  const lines=['🏸 BADMINTON CLUB — SOLDES',`📅 Au ${new Date().toLocaleDateString('fr-BE')} (${sessions.length} sessions · ${sessions.length*config.sessionSlots} demi-h)`,`💶 Coût total : ${fmt(totalCost)} €`,'',
+    ...sorted.map((p,i)=>`${i+1}. ${p.padEnd(12)} → ${fmt(stats[p].total)} € (${stats[p].sessions} sess. · ${stats[p].demiH} demi-h)`)];
+  navigator.clipboard.writeText(lines.join('\n')).catch(()=>{});
+  showToast('📋 Résumé copié !');
+}
+
+// ===== CONFIG MODAL =====
+function openModal(){
+  document.getElementById('cfgPrice').value=config.price;
+  document.getElementById('cfgSlots').value=config.slots;
+  document.getElementById('cfgSession').value=config.sessionSlots;
+  updateCfgPreview();
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open');}
+function updateCfgPreview(){
+  const price=parseFloat(document.getElementById('cfgPrice').value)||0;
+  const slots=parseInt(document.getElementById('cfgSlots').value)||1;
+  const sess=parseInt(document.getElementById('cfgSession').value)||1;
+  const n=slots/sess;
+  document.getElementById('cfgPreview').textContent=fmt(price/n)+' €';
+  document.getElementById('cfgFormula').textContent=`${price} ÷ ${n}`;
+}
+['cfgPrice','cfgSlots','cfgSession'].forEach(id=>document.getElementById(id).addEventListener('input',updateCfgPreview));
+async function saveConfig(){
+  config.price=parseFloat(document.getElementById('cfgPrice').value)||114;
+  config.slots=parseInt(document.getElementById('cfgSlots').value)||12;
+  config.sessionSlots=parseInt(document.getElementById('cfgSession').value)||2;
+  localStorage.setItem('badminton_config',JSON.stringify(config));
+  closeModal(); updateCostPreview(); updateCarteStatus();
+  if(accessToken){ try{ await saveToSheets(); setSyncStatus('ok','Synchronisé'); }catch(e){} }
+  showToast('✅ Configuration sauvegardée');
+}
+
+// ===== UTILS =====
+function parseNum(s){ return parseFloat(String(s).replace(',','.')); }
+function fmt(n){return n.toLocaleString('fr-BE',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function formatDate(d){if(!d)return'–';const[y,m,dd]=d.split('-');return`${dd}/${m}/${y}`;}
+let toastTimeout;
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+window.onload = () => { if(window.google) init(); else setTimeout(init, 1000); };
+
+// Service Worker — force le refresh à chaque nouvelle version
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/Badminton-club/sw.js').then(reg => {
+    reg.addEventListener('updatefound', () => {
+      const newWorker = reg.installing;
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'activated') {
+          window.location.reload();
+        }
+      });
+    });
+  });
+}
+</script>
+</body>
+</html>

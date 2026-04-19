@@ -1,0 +1,22 @@
+{
+  "name": "Badminton Club",
+  "short_name": "Badminton",
+  "description": "Suivi des sessions et répartition des coûts",
+  "start_url": "/Badminton-club/",
+  "display": "standalone",
+  "background_color": "#0f1923",
+  "theme_color": "#0f1923",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
